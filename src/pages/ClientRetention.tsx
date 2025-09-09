@@ -222,9 +222,23 @@ const ClientRetention = () => {
     ];
 
     return locations.map(location => {
-      const locationData = filteredData.filter(item => 
-        item.firstVisitLocation === location.key || item.homeLocation === location.key
-      );
+      const locationData = filteredData.filter(item => {
+        const firstLocation = item.firstVisitLocation || '';
+        const homeLocation = item.homeLocation || '';
+        
+        // For Kenkere House, use flexible matching
+        if (location.key === 'Kenkere House, Bengaluru') {
+          return firstLocation.toLowerCase().includes('kenkere') || 
+                 firstLocation.toLowerCase().includes('bengaluru') ||
+                 firstLocation === 'Kenkere House' ||
+                 homeLocation.toLowerCase().includes('kenkere') || 
+                 homeLocation.toLowerCase().includes('bengaluru') ||
+                 homeLocation === 'Kenkere House';
+        }
+        
+        // For other locations, use exact match
+        return firstLocation === location.key || homeLocation === location.key;
+      });
       
       const totalClients = locationData.length;
       
