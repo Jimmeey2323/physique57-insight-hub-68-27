@@ -11,6 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { NewClientFilterOptions } from '@/types/dashboard';
 import { ModernHeroSection } from '@/components/ui/ModernHeroSection';
 import { formatNumber } from '@/utils/formatters';
+import { getPreviousMonthDateRange, parseDate } from '@/utils/dateUtils';
 
 // Import new components for rebuilt client conversion tab
 import { EnhancedClientConversionFilterSection } from '@/components/dashboard/EnhancedClientConversionFilterSection';
@@ -33,28 +34,9 @@ const ClientRetention = () => {
   const [activeTable, setActiveTable] = useState('monthonmonthbytype');
   const [drillDownModal, setDrillDownModal] = useState({ isOpen: false, client: null, title: '', data: null, type: 'month' as any });
   
-  // Get previous month date range function
-  const getPreviousMonthRange = () => {
-    const now = new Date();
-    const firstDayPreviousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const lastDayPreviousMonth = new Date(now.getFullYear(), now.getMonth(), 0);
-    
-    const formatDate = (date: Date) => {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    };
-    
-    return {
-      start: formatDate(firstDayPreviousMonth),
-      end: formatDate(lastDayPreviousMonth)
-    };
-  };
-  
   // Filters state
   const [filters, setFilters] = useState<NewClientFilterOptions>(() => {
-    const previousMonth = getPreviousMonthRange();
+    const previousMonth = getPreviousMonthDateRange();
     return {
       dateRange: previousMonth,
       location: [],
@@ -120,36 +102,9 @@ const ClientRetention = () => {
       filtered = filtered.filter(client => {
         if (!client.firstVisitDate) return false;
         
-        let clientDate: Date;
-        const dateStr = client.firstVisitDate.trim();
-        
-        // Handle different date formats
-        if (dateStr.includes('/')) {
-          // Handle format: "01/01/2020, 17:30:00" or "01/01/2020"
-          const datePart = dateStr.split(',')[0].trim();
-          const parts = datePart.split('/');
-          
-          if (parts.length === 3) {
-            // Try DD/MM/YYYY format first (most common)
-            const [day, month, year] = parts;
-            clientDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-            
-            // If invalid, try MM/DD/YYYY format
-            if (isNaN(clientDate.getTime())) {
-              clientDate = new Date(parseInt(year), parseInt(day) - 1, parseInt(month));
-            }
-          } else {
-            clientDate = new Date(dateStr);
-          }
-        } else if (dateStr.includes('-')) {
-          // Handle YYYY-MM-DD format
-          clientDate = new Date(dateStr);
-        } else {
-          clientDate = new Date(dateStr);
-        }
-        
-        if (isNaN(clientDate.getTime())) {
-          console.warn('Invalid client date:', dateStr);
+        const clientDate = parseDate(client.firstVisitDate);
+        if (!clientDate) {
+          console.warn('Invalid client date:', client.firstVisitDate);
           return false;
         }
         
@@ -161,7 +116,7 @@ const ClientRetention = () => {
         if (!withinRange) {
           console.log('Client filtered out by date:', { 
             clientDate: clientDate.toISOString().split('T')[0], 
-            originalDate: dateStr,
+            originalDate: client.firstVisitDate,
             startDate: startDate?.toISOString().split('T')[0],
             endDate: endDate?.toISOString().split('T')[0]
           });
