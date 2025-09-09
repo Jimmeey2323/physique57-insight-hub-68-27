@@ -112,25 +112,65 @@ const ClientRetention = () => {
     
     // Apply date range filter FIRST
     if (filters.dateRange.start || filters.dateRange.end) {
-      const startDate = filters.dateRange.start ? new Date(filters.dateRange.start) : null;
-      const endDate = filters.dateRange.end ? new Date(filters.dateRange.end) : null;
+      const startDate = filters.dateRange.start ? new Date(filters.dateRange.start + 'T00:00:00') : null;
+      const endDate = filters.dateRange.end ? new Date(filters.dateRange.end + 'T23:59:59') : null;
+
+      console.log('Date filter range:', { start: startDate, end: endDate });
 
       filtered = filtered.filter(client => {
         if (!client.firstVisitDate) return false;
         
         let clientDate: Date;
-        if (client.firstVisitDate.includes('/')) {
-          const [day, month, year] = client.firstVisitDate.split(' ')[0].split('/');
-          clientDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+        const dateStr = client.firstVisitDate.trim();
+        
+        // Handle different date formats
+        if (dateStr.includes('/')) {
+          // Handle format: "01/01/2020, 17:30:00" or "01/01/2020"
+          const datePart = dateStr.split(',')[0].trim();
+          const parts = datePart.split('/');
+          
+          if (parts.length === 3) {
+            // Try DD/MM/YYYY format first (most common)
+            const [day, month, year] = parts;
+            clientDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+            
+            // If invalid, try MM/DD/YYYY format
+            if (isNaN(clientDate.getTime())) {
+              clientDate = new Date(parseInt(year), parseInt(day) - 1, parseInt(month));
+            }
+          } else {
+            clientDate = new Date(dateStr);
+          }
+        } else if (dateStr.includes('-')) {
+          // Handle YYYY-MM-DD format
+          clientDate = new Date(dateStr);
         } else {
-          clientDate = new Date(client.firstVisitDate);
+          clientDate = new Date(dateStr);
         }
         
-        if (isNaN(clientDate.getTime())) return false;
-        if (startDate && clientDate < startDate) return false;
-        if (endDate && clientDate > endDate) return false;
-        return true;
+        if (isNaN(clientDate.getTime())) {
+          console.warn('Invalid client date:', dateStr);
+          return false;
+        }
+        
+        // Set client date to start of day for comparison
+        clientDate.setHours(0, 0, 0, 0);
+        
+        const withinRange = (!startDate || clientDate >= startDate) && (!endDate || clientDate <= endDate);
+        
+        if (!withinRange) {
+          console.log('Client filtered out by date:', { 
+            clientDate: clientDate.toISOString().split('T')[0], 
+            originalDate: dateStr,
+            startDate: startDate?.toISOString().split('T')[0],
+            endDate: endDate?.toISOString().split('T')[0]
+          });
+        }
+        
+        return withinRange;
       });
+      
+      console.log(`Date filter applied: ${data.length} -> ${filtered.length} records`);
     }
     
     // Apply location filter - check both firstVisitLocation and homeLocation
