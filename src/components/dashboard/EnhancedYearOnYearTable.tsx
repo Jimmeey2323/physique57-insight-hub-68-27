@@ -115,35 +115,10 @@ export const EnhancedYearOnYearTable: React.FC<EnhancedYearOnYearTableProps> = (
     }
   };
 
-  const getGrowthIndicator = (current: number, previous: number, period: 'year' = 'year') => {
+  const getGrowthPercentage = (current: number, previous: number) => {
     if (previous === 0 && current === 0) return null;
-    if (previous === 0) return (
-      <div className="flex items-center gap-1">
-        <TrendingUp className="w-3 h-3 text-green-500 inline" />
-        <span className="text-green-600 text-xs">New vs last {period}</span>
-      </div>
-    );
-    const growth = (current - previous) / previous * 100;
-    if (growth > 5) {
-      return (
-        <div className="flex items-center gap-1">
-          <TrendingUp className="w-3 h-3 text-green-500 inline" />
-          <span className="text-green-600 text-xs">+{growth.toFixed(1)}% vs last {period}</span>
-        </div>
-      );
-    } else if (growth < -5) {
-      return (
-        <div className="flex items-center gap-1">
-          <TrendingDown className="w-3 h-3 text-red-500 inline" />
-          <span className="text-red-600 text-xs">{growth.toFixed(1)}% vs last {period}</span>
-        </div>
-      );
-    }
-    return (
-      <div className="flex items-center gap-1">
-        <span className="text-gray-500 text-xs">{growth.toFixed(1)}% vs last {period}</span>
-      </div>
-    );
+    if (previous === 0) return '+100';
+    return ((current - previous) / previous * 100).toFixed(1);
   };
 
   // Get all data for historic comparison (include 2024 data regardless of filters)
@@ -355,9 +330,9 @@ export const EnhancedYearOnYearTable: React.FC<EnhancedYearOnYearTableProps> = (
       <CardContent className="p-0">
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white border-t border-gray-200 rounded-lg">
-            <thead className="bg-gradient-to-r from-purple-700 to-purple-900 text-white font-semibold text-sm uppercase tracking-wider px-4 py-2 sticky top-0 z-20">
-              <tr className="bg-gradient-to-r from-blue-800 to-indigo-900 text-white font-semibold text-sm uppercase tracking-wider px-4 py-2 rounded-md bg-blue-950">
-                <th className="bg-gradient-to-r from-blue-800 to-blue-800 text-white font-semibold text-sm uppercase tracking-wider px-4 py-2 rounded-none">
+            <thead className="bg-gradient-to-r from-purple-700 to-purple-900 text-white font-semibold text-sm uppercase tracking-wider sticky top-0 z-30">
+              <tr className="bg-gradient-to-r from-blue-800 to-indigo-900 text-white font-semibold text-sm uppercase tracking-wider">
+                <th className="bg-gradient-to-r from-blue-800 to-blue-800 text-white font-semibold text-sm uppercase tracking-wider px-4 py-2 sticky left-0 z-40">
                   Product/Category
                 </th>
                 {monthlyData.map(({
@@ -377,7 +352,7 @@ export const EnhancedYearOnYearTable: React.FC<EnhancedYearOnYearTableProps> = (
             <tbody>
               {processedData.map(categoryGroup => <React.Fragment key={categoryGroup.category}>
                   <tr onClick={() => handleGroupToggle(categoryGroup.category)} className="bg-white hover:bg-gray-100 cursor-pointer border-b border-gray-200 group transition-colors duration-200 ease-in-out">
-                    <td className="py-4 font-semibold text-gray-800 group-hover:text-gray-900 bg-white group-hover:bg-gray-100 sticky left-0 z-10 transition-colors duration-200 ease-in-out px-[10px] min-w-80 text-sm">
+                    <td className="py-2 font-semibold text-gray-800 group-hover:text-gray-900 bg-white group-hover:bg-gray-100 sticky left-0 z-20 transition-colors duration-200 ease-in-out px-[10px] min-w-80 text-sm max-h-[35px] h-[35px] overflow-hidden">
                       <div className="flex justify-between items-center min-w-full text-md text-bold">
                         {localCollapsedGroups.has(categoryGroup.category) ? <ChevronRight className="w-4 h-4 mr-2 text-gray-500 transition-transform duration-200" /> : <ChevronDown className="w-4 h-4 mr-2 text-gray-500 transition-transform duration-200" />}
                         {categoryGroup.category}
@@ -386,14 +361,20 @@ export const EnhancedYearOnYearTable: React.FC<EnhancedYearOnYearTableProps> = (
                         </Badge>
                       </div>
                     </td>
-                    {monthlyData.map(({
-                  key,
-                  year,
-                  month,
-                  display
-                }) => <td 
-                  key={key} 
-                  className="px-4 py-4 text-center font-semibold text-gray-900 text-sm hover:bg-blue-100 cursor-pointer transition-colors"
+                  {monthlyData.map(({
+                key,
+                year,
+                month,
+                display
+              }, monthIndex) => {
+                const current = categoryGroup.monthlyValues[key] || 0;
+                const previous = monthIndex > 0 ? categoryGroup.monthlyValues[monthlyData[monthIndex - 1].key] || 0 : 0;
+                const growthPercentage = getGrowthPercentage(current, previous);
+                
+                return <td 
+                  key={key}
+                  className="px-4 py-2 text-center font-semibold text-gray-900 text-sm hover:bg-blue-100 cursor-pointer transition-colors max-h-[35px] h-[35px] overflow-hidden"
+                  title={growthPercentage ? `${growthPercentage}% vs last year` : ''}
                   onClick={(e) => {
                     e.stopPropagation(); // Prevent group toggle
                     
@@ -438,7 +419,8 @@ export const EnhancedYearOnYearTable: React.FC<EnhancedYearOnYearTableProps> = (
                   }}
                 >
                         {formatMetricValue(categoryGroup.monthlyValues[key] || 0, selectedMetric)}
-                      </td>)}
+                      </td>;
+                })}
                   </tr>
 
                   {!localCollapsedGroups.has(categoryGroup.category) && categoryGroup.products.map(product => <tr key={`${categoryGroup.category}-${product.product}`} className="hover:bg-blue-50 cursor-pointer border-b border-gray-100 transition-colors duration-200" onClick={() => onRowClick && onRowClick(product.rawData)}>

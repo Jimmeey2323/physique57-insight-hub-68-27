@@ -112,8 +112,8 @@ export const MonthOnMonthTable: React.FC<MonthOnMonthTableProps> = ({
     const currentYear = currentDate.getFullYear();
     const currentMonth = currentDate.getMonth();
 
-    // Generate months from current month backwards to 18 months ago
-    for (let i = 0; i < 18; i++) {
+    // Generate months from 18 months ago to current month (ascending order)
+    for (let i = 17; i >= 0; i--) {
       const date = new Date(currentYear, currentMonth - i, 1);
       const year = date.getFullYear();
       const month = date.getMonth();
@@ -185,35 +185,10 @@ export const MonthOnMonthTable: React.FC<MonthOnMonthTableProps> = ({
     });
     return categoryData.sort((a, b) => b.metricValue - a.metricValue);
   }, [data, selectedMetric, monthlyData]);
-  const getGrowthIndicator = (current: number, previous: number, period: 'month' | 'year' = 'month') => {
+  const getGrowthPercentage = (current: number, previous: number) => {
     if (previous === 0 && current === 0) return null;
-    if (previous === 0) return (
-      <div className="flex items-center gap-1">
-        <TrendingUp className="w-3 h-3 text-green-500 inline" />
-        <span className="text-green-600 text-xs">vs last {period}</span>
-      </div>
-    );
-    const growth = (current - previous) / previous * 100;
-    if (growth > 5) {
-      return (
-        <div className="flex items-center gap-1">
-          <TrendingUp className="w-3 h-3 text-green-500 inline" />
-          <span className="text-green-600 text-xs">+{growth.toFixed(1)}% vs last {period}</span>
-        </div>
-      );
-    } else if (growth < -5) {
-      return (
-        <div className="flex items-center gap-1">
-          <TrendingDown className="w-3 h-3 text-red-500 inline" />
-          <span className="text-red-600 text-xs">{growth.toFixed(1)}% vs last {period}</span>
-        </div>
-      );
-    }
-    return (
-      <div className="flex items-center gap-1">
-        <span className="text-gray-500 text-xs">{growth.toFixed(1)}% vs last {period}</span>
-      </div>
-    );
+    if (previous === 0) return '+100';
+    return ((current - previous) / previous * 100).toFixed(1);
   };
   const totalsRow = useMemo(() => {
     const monthlyTotals: Record<string, number> = {};
@@ -317,8 +292,8 @@ export const MonthOnMonthTable: React.FC<MonthOnMonthTableProps> = ({
         <div className="overflow-x-auto rounded-b-2xl">
           <table className="min-w-full bg-white border-t border-blue-200 rounded-b-2xl shadow-md">
             <thead className="bg-gradient-to-r from-blue-700 to-blue-900 text-white font-semibold text-sm uppercase tracking-wider sticky top-0 z-30">
-              <tr className="bg-gradient-to-r from-blue-700 to-blue-900 text-white font-semibold text-sm uppercase tracking-wider px-4 py-2 rounded-md">
-                <th rowSpan={2} className="text-white font-semibold uppercase tracking-wider px-6 py-3 text-left rounded-tl-lg sticky left-0 bg-blue-800 z-30">
+              <tr className="bg-gradient-to-r from-blue-700 to-blue-900 text-white font-semibold text-sm uppercase tracking-wider">
+                <th rowSpan={2} className="text-white font-semibold uppercase tracking-wider px-6 py-3 text-left rounded-tl-lg sticky left-0 bg-blue-800 z-40 max-h-[35px] h-[35px]">
                   Category / Product
                 </th>
                 {Object.entries(groupedMonths).map(([quarterKey, months]) => <th key={quarterKey} colSpan={months.length} className="text-white font-semibold text-sm uppercase tracking-wider px-4 py-2 text-center border-l border-blue-600">
@@ -329,7 +304,7 @@ export const MonthOnMonthTable: React.FC<MonthOnMonthTableProps> = ({
                 {monthlyData.map(({
                 key,
                 display
-              }) => <th key={key} className="text-white font-semibold text-xs uppercase tracking-wider px-3 py-2 bg-blue-800 border-l border-blue-600">
+              }) => <th key={key} className="text-white font-semibold text-xs uppercase tracking-wider px-3 py-2 bg-blue-800 border-l border-blue-600 max-h-[35px] h-[35px]">
                     <div className="flex flex-col">
                       <span className="text-sm">{display.split(' ')[0]}</span>
                       <span className="text-blue-200 text-xs">{display.split(' ')[1]}</span>
@@ -339,9 +314,9 @@ export const MonthOnMonthTable: React.FC<MonthOnMonthTableProps> = ({
             </thead>
             <tbody>
               {processedData.map((categoryData, categoryIndex) => <React.Fragment key={categoryData.category}>
-                  <tr className="bg-gradient-to-r from-gray-100 to-gray-200 border-b-2 border-gray-300 font-bold">
+                  <tr className="bg-gradient-to-r from-gray-100 to-gray-200 border-b-2 border-gray-300 font-bold max-h-[35px] h-[35px]">
                     <td 
-                      className="text-sm font-bold text-gray-800 sticky left-0 bg-gradient-to-r from-gray-100 to-gray-200 border-r border-gray-300 z-20 hover:bg-blue-100 cursor-pointer transition-colors"
+                      className="text-sm font-bold text-gray-800 sticky left-0 bg-gradient-to-r from-gray-100 to-gray-200 border-r border-gray-300 z-20 hover:bg-blue-100 cursor-pointer transition-colors max-h-[35px] h-[35px] overflow-hidden"
                       onClick={(e) => {
                         // Check if click is on toggle button
                         const target = e.target as HTMLElement;
@@ -398,10 +373,12 @@ export const MonthOnMonthTable: React.FC<MonthOnMonthTableProps> = ({
                 }, monthIndex) => {
                   const current = categoryData.monthlyValues[key] || 0;
                   const previous = monthIndex > 0 ? categoryData.monthlyValues[monthlyData[monthIndex - 1].key] || 0 : 0;
+                  const growthPercentage = getGrowthPercentage(current, previous);
                   
                   return <td 
                     key={key} 
-                    className="px-3 py-3 text-center text-sm text-gray-800 font-mono font-bold border-l border-gray-300 hover:bg-blue-100 cursor-pointer transition-colors"
+                    className="px-3 py-3 text-center text-sm text-gray-800 font-mono font-bold border-l border-gray-300 hover:bg-blue-100 cursor-pointer transition-colors max-h-[35px] h-[35px]"
+                    title={growthPercentage ? `${growthPercentage}% vs last month` : ''}
                     onClick={(e) => {
                       e.stopPropagation(); // Prevent toggle
                       
@@ -447,14 +424,13 @@ export const MonthOnMonthTable: React.FC<MonthOnMonthTableProps> = ({
                   >
                           <div className="flex items-center justify-center">
                       {formatMetricValue(current, selectedMetric)}
-                      {getGrowthIndicator(current, previous, 'month')}
                           </div>
                         </td>;
                 })}
                   </tr>
                   
                   {!localCollapsedGroups.has(categoryData.category) && categoryData.products.map((product, productIndex) => <tr key={`${categoryData.category}-${product.product}`} onClick={() => handleRowClickWithDrillDown(product)} className="hover:bg-gray-100/60 cursor-pointer border-b border-gray-100 transition-colors duration-200 group">
-                      <td className="px-2 py-3 text-sm font-medium text-gray-900 sticky left-0 bg-white border-r border-gray-200 min-w-96 z-10">
+                      <td className="px-2 py-2 text-sm font-medium text-gray-900 sticky left-0 bg-white border-r border-gray-200 min-w-96 z-10 max-h-[35px] h-[35px] overflow-hidden">
                         <div className="flex items-center gap-2 pl-8">
                           <span className="text-gray-500">#{productIndex + 1}</span>
                           <span className="whitespace-normal break-words font-semibold group-hover:text-blue-700 transition-all duration-150">{product.product}</span>
@@ -468,10 +444,12 @@ export const MonthOnMonthTable: React.FC<MonthOnMonthTableProps> = ({
                 }, monthIndex) => {
                   const current = product.monthlyValues[key] || 0;
                   const previous = monthIndex > 0 ? product.monthlyValues[monthlyData[monthIndex - 1].key] || 0 : 0;
+                  const growthPercentage = getGrowthPercentage(current, previous);
                   
                   return <td 
                     key={key} 
-                    className="px-3 py-3 text-center text-sm text-gray-900 font-mono border-l border-gray-100 hover:bg-blue-50 cursor-pointer transition-colors"
+                    className="px-3 py-3 text-center text-sm text-gray-900 font-mono border-l border-gray-100 hover:bg-blue-50 cursor-pointer transition-colors max-h-[35px] h-[35px] overflow-hidden"
+                    title={growthPercentage ? `${growthPercentage}% vs last month` : ''}
                     onClick={(e) => {
                       e.stopPropagation(); // Prevent row click
                       
@@ -514,7 +492,6 @@ export const MonthOnMonthTable: React.FC<MonthOnMonthTableProps> = ({
                   >
                             <div className="flex items-center justify-center">
                               {formatMetricValue(current, selectedMetric)}
-                              {getGrowthIndicator(current, previous, 'month')}
                             </div>
                           </td>;
                 })}
