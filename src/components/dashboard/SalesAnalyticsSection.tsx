@@ -28,6 +28,10 @@ interface SalesAnalyticsSectionProps {
 }
 
 const locations = [{
+  id: 'all',
+  name: 'All Locations',
+  fullName: 'All Locations'
+}, {
   id: 'kwality',
   name: 'Kwality House, Kemps Corner',
   fullName: 'Kwality House, Kemps Corner'
@@ -42,7 +46,7 @@ const locations = [{
 }];
 
 export const SalesAnalyticsSection: React.FC<SalesAnalyticsSectionProps> = ({ data }) => {
-  const [activeLocation, setActiveLocation] = useState('kwality');
+  const [activeLocation, setActiveLocation] = useState('all');
   const [currentTheme, setCurrentTheme] = useState('classic');
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [drillDownData, setDrillDownData] = useState<any>(null);
@@ -72,14 +76,16 @@ export const SalesAnalyticsSection: React.FC<SalesAnalyticsSectionProps> = ({ da
     let filtered = [...rawData];
 
     // Apply location filter
-    filtered = filtered.filter(item => {
-      const locationMatch = activeLocation === 'kwality' 
-        ? item.calculatedLocation === 'Kwality House, Kemps Corner' 
-        : activeLocation === 'supreme' 
-        ? item.calculatedLocation === 'Supreme HQ, Bandra' 
-        : item.calculatedLocation?.includes('Kenkere') || item.calculatedLocation === 'Kenkere House';
-      return locationMatch;
-    });
+    if (activeLocation !== 'all') {
+      filtered = filtered.filter(item => {
+        const locationMatch = activeLocation === 'kwality' 
+          ? item.calculatedLocation === 'Kwality House, Kemps Corner' 
+          : activeLocation === 'supreme' 
+          ? item.calculatedLocation === 'Supreme HQ, Bandra' 
+          : item.calculatedLocation?.includes('Kenkere') || item.calculatedLocation === 'Kenkere House';
+        return locationMatch;
+      });
+    }
 
     console.log('After location filter:', filtered.length, 'records');
 
@@ -374,7 +380,7 @@ export const SalesAnalyticsSection: React.FC<SalesAnalyticsSectionProps> = ({ da
       <div className="space-y-6">
         <Tabs value={activeLocation} onValueChange={setActiveLocation} className="w-full">
           <div className="flex justify-center mb-8">
-            <TabsList className="bg-white/90 backdrop-blur-sm p-2 rounded-2xl shadow-xl border-0 grid grid-cols-3 w-full max-w-7xl min-h-24 overflow-hidden">
+            <TabsList className="bg-white/90 backdrop-blur-sm p-2 rounded-2xl shadow-xl border-0 grid grid-cols-4 w-full max-w-7xl min-h-24 overflow-hidden">
               {locations.map(location => (
                 <TabsTrigger 
                   key={location.id} 

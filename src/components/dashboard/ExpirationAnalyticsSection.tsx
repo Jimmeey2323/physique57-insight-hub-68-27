@@ -21,6 +21,10 @@ interface ExpirationAnalyticsSectionProps {
 }
 
 const locations = [{
+  id: 'all',
+  name: 'All Locations',
+  fullName: 'All Locations'
+}, {
   id: 'kwality',
   name: 'Kwality House, Kemps Corner',
   fullName: 'Kwality House, Kemps Corner'
@@ -35,7 +39,7 @@ const locations = [{
 }];
 
 export const ExpirationAnalyticsSection: React.FC<ExpirationAnalyticsSectionProps> = ({ data }) => {
-  const [activeLocation, setActiveLocation] = useState('kwality');
+  const [activeLocation, setActiveLocation] = useState('all');
   const [drillDownData, setDrillDownData] = useState<any>(null);
   const [drillDownType, setDrillDownType] = useState<'expiration' | 'member' | 'status'>('expiration');
 
@@ -58,14 +62,16 @@ export const ExpirationAnalyticsSection: React.FC<ExpirationAnalyticsSectionProp
     let filtered = [...rawData];
 
     // Apply location filter
-    filtered = filtered.filter(item => {
-      const locationMatch = activeLocation === 'kwality' 
-        ? item.homeLocation === 'Kwality House, Kemps Corner' 
-        : activeLocation === 'supreme' 
-        ? item.homeLocation === 'Supreme HQ, Bandra' 
-        : item.homeLocation?.includes('Kenkere') || item.homeLocation === 'Kenkere House';
-      return locationMatch;
-    });
+    if (activeLocation !== 'all') {
+      filtered = filtered.filter(item => {
+        const locationMatch = activeLocation === 'kwality' 
+          ? item.homeLocation === 'Kwality House, Kemps Corner' 
+          : activeLocation === 'supreme' 
+          ? item.homeLocation === 'Supreme HQ, Bandra' 
+          : item.homeLocation?.includes('Kenkere') || item.homeLocation === 'Kenkere House';
+        return locationMatch;
+      });
+    }
 
     // Apply status filter
     if (filters.status?.length) {
@@ -215,7 +221,7 @@ export const ExpirationAnalyticsSection: React.FC<ExpirationAnalyticsSectionProp
 
           {/* Location Tabs */}
           <Tabs value={activeLocation} onValueChange={setActiveLocation} className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               {locations.map(location => (
                 <TabsTrigger 
                   key={location.id} 
