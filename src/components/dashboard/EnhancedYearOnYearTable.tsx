@@ -2,7 +2,7 @@ import React, { useMemo, useState, useCallback } from 'react';
 import { SalesData, FilterOptions, YearOnYearMetricType, EnhancedYearOnYearTableProps } from '@/types/dashboard';
 import { YearOnYearMetricTabs } from './YearOnYearMetricTabs';
 import { formatCurrency, formatNumber, formatPercentage } from '@/utils/formatters';
-import { ChevronDown, ChevronRight, RefreshCw, Filter, Calendar, TrendingUp, Download } from 'lucide-react';
+import { ChevronDown, ChevronRight, RefreshCw, Filter, Calendar, TrendingUp, TrendingDown, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -113,6 +113,37 @@ export const EnhancedYearOnYearTable: React.FC<EnhancedYearOnYearTableProps> = (
       default:
         return formatNumber(value);
     }
+  };
+
+  const getGrowthIndicator = (current: number, previous: number, period: 'year' = 'year') => {
+    if (previous === 0 && current === 0) return null;
+    if (previous === 0) return (
+      <div className="flex items-center gap-1">
+        <TrendingUp className="w-3 h-3 text-green-500 inline" />
+        <span className="text-green-600 text-xs">New vs last {period}</span>
+      </div>
+    );
+    const growth = (current - previous) / previous * 100;
+    if (growth > 5) {
+      return (
+        <div className="flex items-center gap-1">
+          <TrendingUp className="w-3 h-3 text-green-500 inline" />
+          <span className="text-green-600 text-xs">+{growth.toFixed(1)}% vs last {period}</span>
+        </div>
+      );
+    } else if (growth < -5) {
+      return (
+        <div className="flex items-center gap-1">
+          <TrendingDown className="w-3 h-3 text-red-500 inline" />
+          <span className="text-red-600 text-xs">{growth.toFixed(1)}% vs last {period}</span>
+        </div>
+      );
+    }
+    return (
+      <div className="flex items-center gap-1">
+        <span className="text-gray-500 text-xs">{growth.toFixed(1)}% vs last {period}</span>
+      </div>
+    );
   };
 
   // Get all data for historic comparison (include 2024 data regardless of filters)

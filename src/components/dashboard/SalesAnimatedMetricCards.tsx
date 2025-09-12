@@ -243,7 +243,7 @@ export const SalesAnimatedMetricCards: React.FC<SalesAnimatedMetricCardsProps> =
                       }`}>
                         {isPositive ? '+' : ''}{metric.change.toFixed(1)}%
                       </span>
-                      <span className="text-sm text-white/80">vs last period</span>
+                      <span className="text-sm text-white/80">vs last month</span>
                     </div>
                   </div>
                 </div>

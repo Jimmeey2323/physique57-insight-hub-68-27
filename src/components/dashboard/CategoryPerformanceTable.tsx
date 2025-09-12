@@ -171,16 +171,35 @@ export const CategoryPerformanceTable: React.FC<CategoryPerformanceTableProps> =
     console.log('Sample category data:', categoryData[0]);
     return categoryData.sort((a, b) => b.metricValue - a.metricValue);
   }, [data, selectedMetric, monthlyData]);
-  const getGrowthIndicator = (current: number, previous: number) => {
+  const getGrowthIndicator = (current: number, previous: number, period: 'month' = 'month') => {
     if (previous === 0 && current === 0) return null;
-    if (previous === 0) return <TrendingUp className="w-3 h-3 text-green-500 inline ml-1" />;
+    if (previous === 0) return (
+      <div className="flex items-center gap-1">
+        <TrendingUp className="w-3 h-3 text-green-500 inline" />
+        <span className="text-green-600 text-xs">New vs last {period}</span>
+      </div>
+    );
     const growth = (current - previous) / previous * 100;
     if (growth > 5) {
-      return <TrendingUp className="w-3 h-3 text-green-500 inline ml-1" />;
+      return (
+        <div className="flex items-center gap-1">
+          <TrendingUp className="w-3 h-3 text-green-500 inline" />
+          <span className="text-green-600 text-xs">+{growth.toFixed(1)}% vs last {period}</span>
+        </div>
+      );
     } else if (growth < -5) {
-      return <TrendingDown className="w-3 h-3 text-red-500 inline ml-1" />;
+      return (
+        <div className="flex items-center gap-1">
+          <TrendingDown className="w-3 h-3 text-red-500 inline" />
+          <span className="text-red-600 text-xs">{growth.toFixed(1)}% vs last {period}</span>
+        </div>
+      );
     }
-    return null;
+    return (
+      <div className="flex items-center gap-1">
+        <span className="text-gray-500 text-xs">{growth.toFixed(1)}% vs last {period}</span>
+      </div>
+    );
   };
 
   // Calculate totals row
@@ -294,7 +313,7 @@ export const CategoryPerformanceTable: React.FC<CategoryPerformanceTableProps> =
                 >
                         <div className="flex items-center justify-center">
                           {formatMetricValue(current, selectedMetric)}
-                          {getGrowthIndicator(current, previous)}
+                          {getGrowthIndicator(current, previous, 'month')}
                         </div>
                       </td>;
               })}

@@ -415,14 +415,14 @@ export const SalesAnalyticsSection: React.FC<SalesAnalyticsSectionProps> = ({ da
 
               <UnifiedTopBottomSellers data={filteredData} />
 
-              <Tabs defaultValue="yearOnYear" className="w-full">
-                <TabsList className="bg-white/90 backdrop-blur-sm p-2 rounded-2xl shadow-xl border-0 grid grid-cols-6 w-full max-w-6xl mx-auto overflow-hidden">
-                  <TabsTrigger value="yearOnYear" className="relative rounded-xl px-4 py-3 font-semibold text-xs transition-all duration-300 ease-out hover:scale-105 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-gray-50">
-                    Year-on-Year
-                  </TabsTrigger>
-                  <TabsTrigger value="monthOnMonth" className="relative rounded-xl px-4 py-3 font-semibold text-xs transition-all duration-300 ease-out hover:scale-105 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-gray-50">
-                    Month-on-Month
-                  </TabsTrigger>
+                <Tabs defaultValue="monthOnMonth" className="w-full">
+                  <TabsList className="bg-white/90 backdrop-blur-sm p-2 rounded-2xl shadow-xl border-0 grid grid-cols-6 w-full max-w-6xl mx-auto overflow-hidden">
+                    <TabsTrigger value="monthOnMonth" className="relative rounded-xl px-4 py-3 font-semibold text-xs transition-all duration-300 ease-out hover:scale-105 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-gray-50">
+                      Month-on-Month
+                    </TabsTrigger>
+                    <TabsTrigger value="yearOnYear" className="relative rounded-xl px-4 py-3 font-semibold text-xs transition-all duration-300 ease-out hover:scale-105 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-gray-50">
+                      Year-on-Year
+                    </TabsTrigger>
                   <TabsTrigger value="productPerformance" className="relative rounded-xl px-4 py-3 font-semibold text-xs transition-all duration-300 ease-out hover:scale-105 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-gray-50">
                     Product Performance
                   </TabsTrigger>
@@ -437,29 +437,29 @@ export const SalesAnalyticsSection: React.FC<SalesAnalyticsSectionProps> = ({ da
                   </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="yearOnYear" className="mt-8">
-                  <section className="space-y-4">
-                    <h2 className="text-2xl font-bold text-gray-900">Year-on-Year Analysis</h2>
-                    <EnhancedYearOnYearTable 
-                      data={allHistoricData} 
-                      onRowClick={handleRowClick} 
-                      selectedMetric={activeYoyMetric} 
-                    />
-                  </section>
-                </TabsContent>
+                  <TabsContent value="monthOnMonth" className="mt-8">
+                    <section className="space-y-4">
+                      <h2 className="text-2xl font-bold text-gray-900">Month-on-Month Analysis</h2>
+                      <MonthOnMonthTable 
+                        data={allHistoricData} 
+                        onRowClick={handleRowClick} 
+                        collapsedGroups={collapsedGroups} 
+                        onGroupToggle={handleGroupToggle} 
+                        selectedMetric={activeYoyMetric} 
+                      />
+                    </section>
+                  </TabsContent>
 
-                <TabsContent value="monthOnMonth" className="mt-8">
-                  <section className="space-y-4">
-                    <h2 className="text-2xl font-bold text-gray-900">Month-on-Month Analysis</h2>
-                    <MonthOnMonthTable 
-                      data={allHistoricData} 
-                      onRowClick={handleRowClick} 
-                      collapsedGroups={collapsedGroups} 
-                      onGroupToggle={handleGroupToggle} 
-                      selectedMetric={activeYoyMetric} 
-                    />
-                  </section>
-                </TabsContent>
+                  <TabsContent value="yearOnYear" className="mt-8">
+                    <section className="space-y-4">
+                      <h2 className="text-2xl font-bold text-gray-900">Year-on-Year Analysis</h2>
+                      <EnhancedYearOnYearTable 
+                        data={allHistoricData} 
+                        onRowClick={handleRowClick} 
+                        selectedMetric={activeYoyMetric} 
+                      />
+                    </section>
+                  </TabsContent>
 
                 <TabsContent value="productPerformance" className="mt-8">
                   <section className="space-y-4">
