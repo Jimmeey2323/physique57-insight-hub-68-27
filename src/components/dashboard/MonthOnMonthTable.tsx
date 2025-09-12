@@ -239,13 +239,13 @@ export const MonthOnMonthTable: React.FC<MonthOnMonthTableProps> = ({
   const handleRowClickWithDrillDown = (productData: any) => {
     console.log('Product row clicked with data:', productData);
     console.log('Raw data length:', productData.rawData?.length);
-
+    
     // Calculate dynamic metrics from the specific product's raw data
     const specificData = productData.rawData || [];
     const dynamicRevenue = specificData.reduce((sum: any, item: any) => sum + (item.paymentValue || 0), 0);
     const dynamicTransactions = specificData.length;
     const dynamicCustomers = new Set(specificData.map((item: any) => item.memberId || item.customerEmail)).size;
-
+    
     // Enhanced drill-down data with comprehensive analytics
     const drillDownData = {
       ...productData,
@@ -271,6 +271,7 @@ export const MonthOnMonthTable: React.FC<MonthOnMonthTableProps> = ({
       isDynamic: true,
       calculatedFromFiltered: true
     };
+    
     console.log(`Drill-down for ${productData.product}: ${dynamicTransactions} transactions, ${dynamicRevenue} revenue`);
     onRowClick(drillDownData);
   };
@@ -296,8 +297,8 @@ export const MonthOnMonthTable: React.FC<MonthOnMonthTableProps> = ({
       <CardContent className="p-0">
         <div className="overflow-x-auto rounded-b-2xl">
           <table className="min-w-full bg-white border-t border-blue-200 rounded-b-2xl shadow-md">
-            <thead className="bg-gradient-to-r from-purple-800 to-indigo-900 text-white font-semibold text-sm uppercase tracking-wider sticky top-0 z-30">
-              <tr className="bg-gradient-to-r from-purple-800 to-indigo-900 text-white font-semibold text-sm uppercase tracking-wider px-4 py-2">
+            <thead className="bg-gradient-to-r from-blue-700 to-blue-900 text-white font-semibold text-sm uppercase tracking-wider sticky top-0 z-30">
+              <tr className="bg-gradient-to-r from-blue-700 to-blue-900 text-white font-semibold text-sm uppercase tracking-wider px-4 py-2 rounded-md">
                 <th rowSpan={2} className="text-white font-semibold uppercase tracking-wider px-6 py-3 text-left rounded-tl-lg sticky left-0 bg-blue-800 z-30">
                   Category / Product
                 </th>
@@ -320,41 +321,46 @@ export const MonthOnMonthTable: React.FC<MonthOnMonthTableProps> = ({
             <tbody>
               {processedData.map((categoryData, categoryIndex) => <React.Fragment key={categoryData.category}>
                   <tr className="bg-gradient-to-r from-gray-100 to-gray-200 border-b-2 border-gray-300 font-bold">
-                    <td className="text-sm font-bold text-gray-800 sticky left-0 bg-gradient-to-r from-gray-100 to-gray-200 border-r border-gray-300 z-20 hover:bg-blue-100 cursor-pointer transition-colors" onClick={e => {
-                  // Check if click is on toggle button
-                  const target = e.target as HTMLElement;
-                  if (target.closest('button')) {
-                    // Let the toggle button handle the click
-                    return;
-                  }
-
-                  // Category row click - show all data for this category
-                  const categoryData = data.filter(item => item.cleanedCategory === categoryData.category);
-                  const categoryRevenue = categoryData.reduce((sum, item) => sum + (item.paymentValue || 0), 0);
-                  const categoryTransactions = categoryData.length;
-                  const categoryCustomers = new Set(categoryData.map(item => item.memberId || item.customerEmail)).size;
-                  const categoryRowData = {
-                    name: `${categoryData.category} - All Months`,
-                    category: categoryData.category,
-                    totalRevenue: categoryRevenue,
-                    grossRevenue: categoryRevenue,
-                    netRevenue: categoryRevenue,
-                    totalValue: categoryRevenue,
-                    totalCurrent: categoryRevenue,
-                    metricValue: categoryRevenue,
-                    transactions: categoryTransactions,
-                    totalTransactions: categoryTransactions,
-                    uniqueMembers: categoryCustomers,
-                    totalCustomers: categoryCustomers,
-                    rawData: categoryData,
-                    filteredTransactionData: categoryData,
-                    isDynamic: true,
-                    calculatedFromFiltered: true,
-                    isGroup: true
-                  };
-                  console.log(`Category group click: ${categoryData.category} - ${categoryTransactions} transactions, ${categoryRevenue} revenue`);
-                  onRowClick(categoryRowData);
-                }}>
+                    <td 
+                      className="text-sm font-bold text-gray-800 sticky left-0 bg-gradient-to-r from-gray-100 to-gray-200 border-r border-gray-300 z-20 hover:bg-blue-100 cursor-pointer transition-colors"
+                      onClick={(e) => {
+                        // Check if click is on toggle button
+                        const target = e.target as HTMLElement;
+                        if (target.closest('button')) {
+                          // Let the toggle button handle the click
+                          return;
+                        }
+                        
+                        // Category row click - show all data for this category
+                        const categoryData = data.filter(item => item.cleanedCategory === categoryData.category);
+                        const categoryRevenue = categoryData.reduce((sum, item) => sum + (item.paymentValue || 0), 0);
+                        const categoryTransactions = categoryData.length;
+                        const categoryCustomers = new Set(categoryData.map(item => item.memberId || item.customerEmail)).size;
+                        
+                        const categoryRowData = {
+                          name: `${categoryData.category} - All Months`,
+                          category: categoryData.category,
+                          totalRevenue: categoryRevenue,
+                          grossRevenue: categoryRevenue,
+                          netRevenue: categoryRevenue,
+                          totalValue: categoryRevenue,
+                          totalCurrent: categoryRevenue,
+                          metricValue: categoryRevenue,
+                          transactions: categoryTransactions,
+                          totalTransactions: categoryTransactions,
+                          uniqueMembers: categoryCustomers,
+                          totalCustomers: categoryCustomers,
+                          rawData: categoryData,
+                          filteredTransactionData: categoryData,
+                          isDynamic: true,
+                          calculatedFromFiltered: true,
+                          isGroup: true
+                        };
+                        
+                        console.log(`Category group click: ${categoryData.category} - ${categoryTransactions} transactions, ${categoryRevenue} revenue`);
+                        onRowClick(categoryRowData);
+                      }}
+                    >
                       <div className="flex items-center gap-4">
                         <Button variant="ghost" size="sm" onClick={() => toggleGroup(categoryData.category)} className="p-1 h-6 w-6 text-gray-600 hover:text-gray-800">
                           {localCollapsedGroups.has(categoryData.category) ? <ChevronRight className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -373,45 +379,53 @@ export const MonthOnMonthTable: React.FC<MonthOnMonthTableProps> = ({
                 }, monthIndex) => {
                   const current = categoryData.monthlyValues[key] || 0;
                   const previous = monthIndex > 0 ? categoryData.monthlyValues[monthlyData[monthIndex - 1].key] || 0 : 0;
-                  return <td key={key} className="px-3 py-3 text-center text-sm text-gray-800 font-mono font-bold border-l border-gray-300 hover:bg-blue-100 cursor-pointer transition-colors" onClick={e => {
-                    e.stopPropagation(); // Prevent toggle
-
-                    // Category group cell click for specific month
-                    const categoryMonthData = data.filter(item => {
-                      const itemDate = parseDate(item.paymentDate);
-                      if (!itemDate) return false;
-                      const matchesCategory = item.cleanedCategory === categoryData.category;
-                      const matchesMonth = itemDate.getFullYear() === year && itemDate.getMonth() + 1 === month;
-                      return matchesCategory && matchesMonth;
-                    });
-                    const monthRevenue = categoryMonthData.reduce((sum, item) => sum + (item.paymentValue || 0), 0);
-                    const monthTransactions = categoryMonthData.length;
-                    const monthCustomers = new Set(categoryMonthData.map(item => item.memberId || item.customerEmail)).size;
-                    const categoryCellData = {
-                      name: `${categoryData.category} - ${display}`,
-                      category: categoryData.category,
-                      totalRevenue: monthRevenue,
-                      grossRevenue: monthRevenue,
-                      netRevenue: monthRevenue,
-                      totalValue: monthRevenue,
-                      totalCurrent: monthRevenue,
-                      metricValue: monthRevenue,
-                      transactions: monthTransactions,
-                      totalTransactions: monthTransactions,
-                      uniqueMembers: monthCustomers,
-                      totalCustomers: monthCustomers,
-                      rawData: categoryMonthData,
-                      filteredTransactionData: categoryMonthData,
-                      isDynamic: true,
-                      calculatedFromFiltered: true,
-                      isGroupCell: true,
-                      cellSpecific: true,
-                      month: display,
-                      monthKey: key
-                    };
-                    console.log(`Category group cell click: ${categoryData.category} - ${display}: ${monthTransactions} transactions, ${monthRevenue} revenue`);
-                    onRowClick(categoryCellData);
-                  }}>
+                  
+                  return <td 
+                    key={key} 
+                    className="px-3 py-3 text-center text-sm text-gray-800 font-mono font-bold border-l border-gray-300 hover:bg-blue-100 cursor-pointer transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent toggle
+                      
+                      // Category group cell click for specific month
+                      const categoryMonthData = data.filter(item => {
+                        const itemDate = parseDate(item.paymentDate);
+                        if (!itemDate) return false;
+                        const matchesCategory = item.cleanedCategory === categoryData.category;
+                        const matchesMonth = itemDate.getFullYear() === year && itemDate.getMonth() + 1 === month;
+                        return matchesCategory && matchesMonth;
+                      });
+                      
+                      const monthRevenue = categoryMonthData.reduce((sum, item) => sum + (item.paymentValue || 0), 0);
+                      const monthTransactions = categoryMonthData.length;
+                      const monthCustomers = new Set(categoryMonthData.map(item => item.memberId || item.customerEmail)).size;
+                      
+                      const categoryCellData = {
+                        name: `${categoryData.category} - ${display}`,
+                        category: categoryData.category,
+                        totalRevenue: monthRevenue,
+                        grossRevenue: monthRevenue,
+                        netRevenue: monthRevenue,
+                        totalValue: monthRevenue,
+                        totalCurrent: monthRevenue,
+                        metricValue: monthRevenue,
+                        transactions: monthTransactions,
+                        totalTransactions: monthTransactions,
+                        uniqueMembers: monthCustomers,
+                        totalCustomers: monthCustomers,
+                        rawData: categoryMonthData,
+                        filteredTransactionData: categoryMonthData,
+                        isDynamic: true,
+                        calculatedFromFiltered: true,
+                        isGroupCell: true,
+                        cellSpecific: true,
+                        month: display,
+                        monthKey: key
+                      };
+                      
+                      console.log(`Category group cell click: ${categoryData.category} - ${display}: ${monthTransactions} transactions, ${monthRevenue} revenue`);
+                      onRowClick(categoryCellData);
+                    }}
+                  >
                           <div className="flex items-center justify-center">
                             {formatMetricValue(current, selectedMetric)}
                             {getGrowthIndicator(current, previous)}
@@ -435,42 +449,50 @@ export const MonthOnMonthTable: React.FC<MonthOnMonthTableProps> = ({
                 }, monthIndex) => {
                   const current = product.monthlyValues[key] || 0;
                   const previous = monthIndex > 0 ? product.monthlyValues[monthlyData[monthIndex - 1].key] || 0 : 0;
-                  return <td key={key} className="px-3 py-3 text-center text-sm text-gray-900 font-mono border-l border-gray-100 hover:bg-blue-50 cursor-pointer transition-colors" onClick={e => {
-                    e.stopPropagation(); // Prevent row click
-
-                    // Filter data for this specific month and product
-                    const monthSpecificData = (product.rawData || []).filter((transaction: any) => {
-                      const itemDate = parseDate(transaction.paymentDate);
-                      if (!itemDate) return false;
-                      return itemDate.getFullYear() === year && itemDate.getMonth() + 1 === month;
-                    });
-                    const monthRevenue = monthSpecificData.reduce((sum: any, transaction: any) => sum + (transaction.paymentValue || 0), 0);
-                    const monthTransactions = monthSpecificData.length;
-                    const monthCustomers = new Set(monthSpecificData.map((transaction: any) => transaction.memberId || transaction.customerEmail)).size;
-                    const enhancedCellData = {
-                      ...product,
-                      name: `${product.product} - ${display}`,
-                      totalRevenue: monthRevenue,
-                      grossRevenue: monthRevenue,
-                      netRevenue: monthRevenue,
-                      totalValue: monthRevenue,
-                      totalCurrent: monthRevenue,
-                      metricValue: monthRevenue,
-                      transactions: monthTransactions,
-                      totalTransactions: monthTransactions,
-                      uniqueMembers: monthCustomers,
-                      totalCustomers: monthCustomers,
-                      rawData: monthSpecificData,
-                      filteredTransactionData: monthSpecificData,
-                      isDynamic: true,
-                      calculatedFromFiltered: true,
-                      cellSpecific: true,
-                      month: display,
-                      monthKey: key
-                    };
-                    console.log(`Cell click: ${product.product} - ${display}: ${monthTransactions} transactions, ${monthRevenue} revenue`);
-                    onRowClick && onRowClick(enhancedCellData);
-                  }}>
+                  
+                  return <td 
+                    key={key} 
+                    className="px-3 py-3 text-center text-sm text-gray-900 font-mono border-l border-gray-100 hover:bg-blue-50 cursor-pointer transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent row click
+                      
+                      // Filter data for this specific month and product
+                      const monthSpecificData = (product.rawData || []).filter((transaction: any) => {
+                        const itemDate = parseDate(transaction.paymentDate);
+                        if (!itemDate) return false;
+                        return itemDate.getFullYear() === year && itemDate.getMonth() + 1 === month;
+                      });
+                      
+                      const monthRevenue = monthSpecificData.reduce((sum: any, transaction: any) => sum + (transaction.paymentValue || 0), 0);
+                      const monthTransactions = monthSpecificData.length;
+                      const monthCustomers = new Set(monthSpecificData.map((transaction: any) => transaction.memberId || transaction.customerEmail)).size;
+                      
+                      const enhancedCellData = {
+                        ...product,
+                        name: `${product.product} - ${display}`,
+                        totalRevenue: monthRevenue,
+                        grossRevenue: monthRevenue,
+                        netRevenue: monthRevenue,
+                        totalValue: monthRevenue,
+                        totalCurrent: monthRevenue,
+                        metricValue: monthRevenue,
+                        transactions: monthTransactions,
+                        totalTransactions: monthTransactions,
+                        uniqueMembers: monthCustomers,
+                        totalCustomers: monthCustomers,
+                        rawData: monthSpecificData,
+                        filteredTransactionData: monthSpecificData,
+                        isDynamic: true,
+                        calculatedFromFiltered: true,
+                        cellSpecific: true,
+                        month: display,
+                        monthKey: key
+                      };
+                      
+                      console.log(`Cell click: ${product.product} - ${display}: ${monthTransactions} transactions, ${monthRevenue} revenue`);
+                      onRowClick && onRowClick(enhancedCellData);
+                    }}
+                  >
                             <div className="flex items-center justify-center">
                               {formatMetricValue(current, selectedMetric)}
                               {getGrowthIndicator(current, previous)}
@@ -481,32 +503,37 @@ export const MonthOnMonthTable: React.FC<MonthOnMonthTableProps> = ({
                 </React.Fragment>)}
               
               <tr className="bg-gradient-to-r from-blue-200 to-blue-300 border-t-4 border-gray-800 font-bold">
-                <td className="px-6 py-3 text-sm font-bold text-blue-900 sticky left-0 border-r border-blue-300 z-20 bg-slate-50 hover:bg-blue-100 cursor-pointer transition-colors" onClick={() => {
-                // Total row click - show all data
-                const totalRevenue = data.reduce((sum, item) => sum + (item.paymentValue || 0), 0);
-                const totalTransactions = data.length;
-                const totalCustomers = new Set(data.map(item => item.memberId || item.customerEmail)).size;
-                const totalRowData = {
-                  name: 'All Products & Categories - Total',
-                  totalRevenue,
-                  grossRevenue: totalRevenue,
-                  netRevenue: totalRevenue,
-                  totalValue: totalRevenue,
-                  totalCurrent: totalRevenue,
-                  metricValue: totalRevenue,
-                  transactions: totalTransactions,
-                  totalTransactions,
-                  uniqueMembers: totalCustomers,
-                  totalCustomers,
-                  rawData: data,
-                  filteredTransactionData: data,
-                  isDynamic: true,
-                  calculatedFromFiltered: true,
-                  isTotal: true
-                };
-                console.log(`Total row click: All products & categories - ${totalTransactions} transactions, ${totalRevenue} revenue`);
-                onRowClick(totalRowData);
-              }}>
+                <td 
+                  className="px-6 py-3 text-sm font-bold text-blue-900 sticky left-0 border-r border-blue-300 z-20 bg-slate-50 hover:bg-blue-100 cursor-pointer transition-colors"
+                  onClick={() => {
+                    // Total row click - show all data
+                    const totalRevenue = data.reduce((sum, item) => sum + (item.paymentValue || 0), 0);
+                    const totalTransactions = data.length;
+                    const totalCustomers = new Set(data.map(item => item.memberId || item.customerEmail)).size;
+                    
+                    const totalRowData = {
+                      name: 'All Products & Categories - Total',
+                      totalRevenue,
+                      grossRevenue: totalRevenue,
+                      netRevenue: totalRevenue,
+                      totalValue: totalRevenue,
+                      totalCurrent: totalRevenue,
+                      metricValue: totalRevenue,
+                      transactions: totalTransactions,
+                      totalTransactions,
+                      uniqueMembers: totalCustomers,
+                      totalCustomers,
+                      rawData: data,
+                      filteredTransactionData: data,
+                      isDynamic: true,
+                      calculatedFromFiltered: true,
+                      isTotal: true
+                    };
+                    
+                    console.log(`Total row click: All products & categories - ${totalTransactions} transactions, ${totalRevenue} revenue`);
+                    onRowClick(totalRowData);
+                  }}
+                >
                   TOTAL
                 </td>
                 {monthlyData.map(({
@@ -514,40 +541,47 @@ export const MonthOnMonthTable: React.FC<MonthOnMonthTableProps> = ({
                 year,
                 month,
                 display
-              }) => <td key={key} className="px-3 py-3 text-center text-sm text-blue-900 font-mono font-bold border-l border-gray-200 bg-white hover:bg-blue-100 cursor-pointer transition-colors" onClick={() => {
-                // Total cell click for specific month
-                const monthSpecificData = data.filter(item => {
-                  const itemDate = parseDate(item.paymentDate);
-                  if (!itemDate) return false;
-                  return itemDate.getFullYear() === year && itemDate.getMonth() + 1 === month;
-                });
-                const monthRevenue = monthSpecificData.reduce((sum, item) => sum + (item.paymentValue || 0), 0);
-                const monthTransactions = monthSpecificData.length;
-                const monthCustomers = new Set(monthSpecificData.map(item => item.memberId || item.customerEmail)).size;
-                const totalCellData = {
-                  name: `All Products & Categories - ${display}`,
-                  totalRevenue: monthRevenue,
-                  grossRevenue: monthRevenue,
-                  netRevenue: monthRevenue,
-                  totalValue: monthRevenue,
-                  totalCurrent: monthRevenue,
-                  metricValue: monthRevenue,
-                  transactions: monthTransactions,
-                  totalTransactions: monthTransactions,
-                  uniqueMembers: monthCustomers,
-                  totalCustomers: monthCustomers,
-                  rawData: monthSpecificData,
-                  filteredTransactionData: monthSpecificData,
-                  isDynamic: true,
-                  calculatedFromFiltered: true,
-                  isTotal: true,
-                  cellSpecific: true,
-                  month: display,
-                  monthKey: key
-                };
-                console.log(`Total cell click: All products & categories - ${display}: ${monthTransactions} transactions, ${monthRevenue} revenue`);
-                onRowClick(totalCellData);
-              }}>
+              }) => <td 
+                key={key} 
+                className="px-3 py-3 text-center text-sm text-blue-900 font-mono font-bold border-l border-gray-200 bg-white hover:bg-blue-100 cursor-pointer transition-colors"
+                onClick={() => {
+                  // Total cell click for specific month
+                  const monthSpecificData = data.filter(item => {
+                    const itemDate = parseDate(item.paymentDate);
+                    if (!itemDate) return false;
+                    return itemDate.getFullYear() === year && itemDate.getMonth() + 1 === month;
+                  });
+                  
+                  const monthRevenue = monthSpecificData.reduce((sum, item) => sum + (item.paymentValue || 0), 0);
+                  const monthTransactions = monthSpecificData.length;
+                  const monthCustomers = new Set(monthSpecificData.map(item => item.memberId || item.customerEmail)).size;
+                  
+                  const totalCellData = {
+                    name: `All Products & Categories - ${display}`,
+                    totalRevenue: monthRevenue,
+                    grossRevenue: monthRevenue,
+                    netRevenue: monthRevenue,
+                    totalValue: monthRevenue,
+                    totalCurrent: monthRevenue,
+                    metricValue: monthRevenue,
+                    transactions: monthTransactions,
+                    totalTransactions: monthTransactions,
+                    uniqueMembers: monthCustomers,
+                    totalCustomers: monthCustomers,
+                    rawData: monthSpecificData,
+                    filteredTransactionData: monthSpecificData,
+                    isDynamic: true,
+                    calculatedFromFiltered: true,
+                    isTotal: true,
+                    cellSpecific: true,
+                    month: display,
+                    monthKey: key
+                  };
+                  
+                  console.log(`Total cell click: All products & categories - ${display}: ${monthTransactions} transactions, ${monthRevenue} revenue`);
+                  onRowClick(totalCellData);
+                }}
+              >
                     {formatMetricValue(totalsRow.monthlyValues[key] || 0, selectedMetric)}
                   </td>)}
               </tr>
